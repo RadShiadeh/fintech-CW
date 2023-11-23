@@ -18,17 +18,19 @@ def collect_avg_profit(df):
     return _zic, _shvr
 
 def plot_performance(n50mean_zic, n500mean_zic, n50mean_shvr, n500mean_shvr):
-    plt.figure(figsize=(10, 4))
-    plt.plot(n50mean_zic, 'r', n50mean_shvr, 'b')
+
+    plt.subplot(1, 2, 1) # row 1, col 2 index 1
+    plt.plot(n50mean_zic, 'b', n50mean_shvr, 'r')
     plt.title('50 sessions')
     plt.xlabel('session')
     plt.ylabel('profit')
-    plt.show()
-    plt.figure(figsize=(20, 4))
-    plt.plot(n500mean_zic, 'r', n500mean_shvr, 'b')
+
+    plt.subplot(1, 2, 2) # index 2
+    plt.plot(n500mean_zic, 'b', n500mean_shvr, 'r')
     plt.title('500 sessions')
     plt.xlabel('session')
     plt.ylabel('profit')
+    plt.show()
 
 def trader_specs_two(R, n):
     SHVR_num = (n*R)//100
@@ -71,23 +73,38 @@ def R_market_run(R, no_sessions, n, supply_range, demand_range, start_time, end_
 
     return res
 
-def plot_wins(res: list):
-    shvr_win = [0] * 9
-    zic_win = [0] * 9
+def plot_wins(res50: list, res500: list):
+    shvr_win50 = [0] * 9
+    zic_win50 = [0] * 9
+    zic_win500 = [0] * 9
+    shvr_win500 = [0] * 9
     for i in range(9):
-        shvr = res[i][0]
-        zic = res[i][1]
-        for j in range(len(zic)):
-            if shvr[j] > zic[j]:
-                shvr_win[i] += 1
-                zic_win[i] = len(zic) - shvr_win[i]
-    plt.figure(figsize=(5, 7))
-    plt.plot(shvr_win, 'r', zic_win, 'b')
-    plt.title('zic vs shvr wins for ' + str(len(zic)) + ' sessions')
+        shvr50 = res50[i][0]
+        zic50 = res50[i][1]
+        shvr500 = res500[i][0]
+        zic500 = res500[i][0]
+        for z in range(len(zic500)):
+            if shvr500[z] > zic500[z]:
+                shvr_win500[i] += 1
+                zic_win500[i] = len(zic500) - shvr_win500[i]            
+        for j in range(len(zic50)):
+            if shvr50[j] > zic50[j]:
+                shvr_win50[i] += 1
+                zic_win50[i] = len(zic50) - shvr_win50[i]
+
+    plt.subplot(1, 2, 1) # row 1, col 2 index 1
+    plt.plot(shvr_win50, 'r', zic_win50, 'b')
+    plt.title('zic vs shvr wins for ' + str(len(zic50)) + ' sessions')
     plt.xlabel('ratios')
     plt.ylabel('number of wins')
-    plt.show()
 
+    plt.subplot(1, 2, 2) # index 2
+    plt.plot(shvr_win500, 'r', zic_win500, 'b')
+    plt.title('zic vs shvr wins for ' + str(len(zic500)) + ' sessions')
+    plt.xlabel('ratios')
+    plt.ylabel('number of wins')
+
+    plt.show()
 
 def collect_pvals_norm(marketoutput: list):
     res = []
