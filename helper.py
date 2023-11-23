@@ -137,81 +137,36 @@ def df_four(path):
     df_profit.columns = ['GVWY', 'SHVR', 'ZIC', 'ZIP']
     return df, df_profit    
 
-def four_trader_specs(t: list, n: int):
-    res = []
-    for i in range(len(t)):
-        t = np.roll(t, i)
-        tmp = []
-        for x in t:
-            tmp.append(int(x))
-        t = tmp
-        shvr_num = (t[0]*n)/100
-        gvwy_num = (t[1]*n)/100
-        zic_num = (t[2]*n)/100
-        zip_num = (t[3]*n)/100
-        buyer_specs = [('SHVR', int(shvr_num)), ('GVWY', int(gvwy_num)), ('ZIC', int(zic_num)), ('ZIP', int(zip_num))]
-        seller_specs = [('SHVR', int(shvr_num)), ('GVWY', int(gvwy_num)), ('ZIC', int(zic_num)), ('ZIP', int(zip_num))]
-        trader_specs = {'sellers': seller_specs, 'buyers': buyer_specs}
-        res.append(trader_specs)
-    return res
-
 def run_market_sim_four(trial_id, no_sessions, t, n, supply_range, demand_range, start_time, end_time):
 
     res = []
 
-    if t == [25, 25, 25, 25]:
-        mean_shvr_t = []
-        mean_GVWY_t = []
-        mean_zic_t = []
-        mean_zip_t = []
-        seller_spec = [('SHVR', 5), ('GVWY', 5), ('ZIC', 5), ('ZIP', 5)]
-        buyer_spec = [('SHVR', 5), ('GVWY', 5), ('ZIC', 5), ('ZIP', 5)]
-        trader_specs = {'sellers': seller_spec, 'buyers': buyer_spec}
-        path = str(trial_id) + "_avg_balance.csv"
-        for _ in range(no_sessions):
-            supply_schedule = [{'from': start_time, 'to': end_time, 'ranges': [supply_range], 'stepmode': 'fixed'}]
-            demand_schedule = [{'from': start_time, 'to': end_time, 'ranges': [demand_range], 'stepmode': 'fixed'}]
-            order_interval = 60
-            order_sched = {'sup': supply_schedule, 'dem': demand_schedule,
+    mean_shvr_t = []
+    mean_GVWY_t = []
+    mean_zic_t = []
+    mean_zip_t = []
+    seller_spec = [('SHVR', int(t[0]*n/100)), ('GVWY', int(t[1]*n/100)), ('ZIC', int(t[2]*n/100)), ('ZIP', int(t[3]*n/100))]
+    buyer_spec = [('SHVR', int(t[0]*n/100)), ('GVWY', int(t[1]*n/100)), ('ZIC', int(t[2]*n/100)), ('ZIP', int(t[3]*n/100))]
+    trader_specs = {'sellers': seller_spec, 'buyers': buyer_spec}
+    path = str(trial_id) + "_avg_balance.csv"
+    for _ in range(no_sessions):
+        supply_schedule = [{'from': start_time, 'to': end_time, 'ranges': [supply_range], 'stepmode': 'fixed'}]
+        demand_schedule = [{'from': start_time, 'to': end_time, 'ranges': [demand_range], 'stepmode': 'fixed'}]
+        order_interval = 60
+        order_sched = {'sup': supply_schedule, 'dem': demand_schedule,
                             'interval': order_interval, 'timemode': 'periodic'}
-            dump_flags = {'dump_blotters': False, 'dump_lobs': False, 'dump_strats': False,
+        dump_flags = {'dump_blotters': False, 'dump_lobs': False, 'dump_strats': False,
                             'dump_avgbals': True, 'dump_tape': False}
-            verbose = False
-            market_session(trial_id, start_time, end_time, trader_specs, order_sched, dump_flags, verbose)
-            _, df_profit = df_four(path)
-            mean_shvr, mean_GVWY, mean_zic, mean_zip = collect_mean_4(df_profit)
-            mean_shvr_t.append(mean_shvr)
-            mean_GVWY_t.append(mean_GVWY)
-            mean_zic_t.append(mean_zic)
-            mean_zip_t.append(mean_zip)
-        res.append([mean_shvr_t, mean_GVWY_t, mean_zic_t, mean_zip_t])
-    else:
-        trader_specs = four_trader_specs(t, n)
-
-        for i, ts in enumerate(trader_specs):
-            mean_shvr_t = []
-            mean_GVWY_t = []
-            mean_zic_t = []
-            mean_zip_t = []
-            trial_id = trial_id + str(i) + "_shift"
-            path = str(trial_id) + "_avg_balance.csv"
-            for _ in range(no_sessions):
-                supply_schedule = [{'from': start_time, 'to': end_time, 'ranges': [supply_range], 'stepmode': 'fixed'}]
-                demand_schedule = [{'from': start_time, 'to': end_time, 'ranges': [demand_range], 'stepmode': 'fixed'}]
-                order_interval = 60
-                order_sched = {'sup': supply_schedule, 'dem': demand_schedule,
-                            'interval': order_interval, 'timemode': 'periodic'}
-                dump_flags = {'dump_blotters': False, 'dump_lobs': False, 'dump_strats': False,
-                            'dump_avgbals': True, 'dump_tape': False}
-                verbose = False
-                market_session(trial_id, start_time, end_time, ts, order_sched, dump_flags, verbose)
-                _, df_profit = df_four(path)
-                mean_shvr, mean_GVWY, mean_zic, mean_zip = collect_mean_4(df_profit)
-                mean_shvr_t.append(mean_shvr)
-                mean_GVWY_t.append(mean_GVWY)
-                mean_zic_t.append(mean_zic)
-                mean_zip_t.append(mean_zip)
-                res.append([mean_shvr_t, mean_GVWY_t, mean_zic_t, mean_zip_t])
+        verbose = False
+        market_session(trial_id, start_time, end_time, trader_specs, order_sched, dump_flags, verbose)
+        _, df_profit = df_four(path)
+        mean_shvr, mean_GVWY, mean_zic, mean_zip = collect_mean_4(df_profit)
+        mean_shvr_t.append(mean_shvr)
+        mean_GVWY_t.append(mean_GVWY)
+        mean_zic_t.append(mean_zic)
+        mean_zip_t.append(mean_zip)
+    res.append([mean_shvr_t, mean_GVWY_t, mean_zic_t, mean_zip_t])
+    
 
             
     return res
