@@ -81,7 +81,7 @@ def plot_wins(res: list):
             if shvr[j] > zic[j]:
                 shvr_win[i] += 1
                 zic_win[i] = len(zic) - shvr_win[i]
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(5, 7))
     plt.plot(shvr_win, 'r', zic_win, 'b')
     plt.title('zic vs shvr wins for ' + str(len(zic)) + ' sessions')
     plt.xlabel('ratios')
@@ -113,12 +113,12 @@ def A_B_test(p_val: list, data_: list, a: float = 0.05):
     
     return res
 
-def anova_test(df):
-    shvr_avg = df['SHVR']
-    gvwy_avg = df['GVWY']
-    zic_avg = df['ZIC']
-    zip_avg = df['ZIP']
-    _, p = stats.f_oneway(shvr_avg, gvwy_avg, zic_avg, zip_avg)
+def a_b_c_test(shvr_avg, gvwy_avg, zic_avg, zip_avg, res):
+    
+    if res[0][0] < 0.05 or res[0][1] < 0.05 or res[0][2] < 0.05 or res[0][3] < 0.05:
+        _, p = stats.kruskal(shvr_avg, gvwy_avg, zic_avg, zip_avg)
+    else:
+        _, p = stats.f_oneway(shvr_avg, gvwy_avg, zic_avg, zip_avg)
     return p
 
 def collect_mean_4(df):
@@ -138,12 +138,8 @@ def df_four(path):
 
 def run_market_sim_four(trial_id, no_sessions, t, n, supply_range, demand_range, start_time, end_time):
 
-    res = []
+    res = [[] for _ in range(4)]
 
-    mean_shvr_t = []
-    mean_GVWY_t = []
-    mean_zic_t = []
-    mean_zip_t = []
     seller_spec = [('SHVR', int(t[0]*n/100)), ('GVWY', int(t[1]*n/100)), ('ZIC', int(t[2]*n/100)), ('ZIP', int(t[3]*n/100))]
     buyer_spec = [('SHVR', int(t[0]*n/100)), ('GVWY', int(t[1]*n/100)), ('ZIC', int(t[2]*n/100)), ('ZIP', int(t[3]*n/100))]
     trader_specs = {'sellers': seller_spec, 'buyers': buyer_spec}
@@ -160,12 +156,25 @@ def run_market_sim_four(trial_id, no_sessions, t, n, supply_range, demand_range,
         market_session(trial_id, start_time, end_time, trader_specs, order_sched, dump_flags, verbose)
         _, df_profit = df_four(path)
         mean_shvr, mean_GVWY, mean_zic, mean_zip = collect_mean_4(df_profit)
-        mean_shvr_t.append(mean_shvr)
-        mean_GVWY_t.append(mean_GVWY)
-        mean_zic_t.append(mean_zic)
-        mean_zip_t.append(mean_zip)
-        res.append([mean_shvr_t, mean_GVWY_t, mean_zic_t, mean_zip_t])
+        res[0].append(mean_shvr)
+        res[1].append(mean_GVWY)
+        res[2].append(mean_zic)
+        res[3].append(mean_zip)
+    
+    p = if_norm(res)
+    
+    result = a_b_c_test(res[0], res[1], res[2], res[3], p)
     
 
             
-    return res
+    return res, result
+
+def if_norm(res):
+    p_vals = []
+    _, p_shvr = stats.shapiro(res[0])
+    _, p_gvwy = stats.shapiro(res[1])
+    _, p_zic = stats.shapiro(res[2])
+    _, p_zip = stats.shapiro(res[3])
+    p_vals.append([p_shvr, p_gvwy, p_zic, p_zip])
+
+    return p_vals
