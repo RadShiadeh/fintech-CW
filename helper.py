@@ -1,4 +1,3 @@
-# Some code...
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import stats
@@ -165,7 +164,7 @@ def run_market_sim_four(trial_id, no_sessions, t, n, supply_range, demand_range,
         mean_GVWY_t.append(mean_GVWY)
         mean_zic_t.append(mean_zic)
         mean_zip_t.append(mean_zip)
-    res.append([mean_shvr_t, mean_GVWY_t, mean_zic_t, mean_zip_t])
+        res.append([mean_shvr_t, mean_GVWY_t, mean_zic_t, mean_zip_t])
     
 
             
