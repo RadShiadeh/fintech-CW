@@ -19,18 +19,14 @@ def collect_avg_profit(df):
 
 def plot_performance(n50mean_zic, n500mean_zic, n50mean_shvr, n500mean_shvr):
 
-    plt.subplot(1, 2, 1) # row 1, col 2 index 1
-    plt.plot(n50mean_zic, 'b', n50mean_shvr, 'r')
-    plt.title('50 sessions')
-    plt.xlabel('session')
-    plt.ylabel('profit')
+    fig = plt.figure(figsize=(20, 7.5))
+    ax1 = fig.add_subplot(221)
+    ax1.plot(n50mean_zic, 'b', n50mean_shvr, 'r')
+    ax2 = fig.add_subplot(222)
+    ax2.plot(n500mean_zic, 'b', n500mean_shvr, 'r')
 
-    plt.subplot(1, 2, 2) # index 2
-    plt.plot(n500mean_zic, 'b', n500mean_shvr, 'r')
-    plt.title('500 sessions')
-    plt.xlabel('session')
-    plt.ylabel('profit')
-    plt.show()
+    ax1.title.set_text('zic vs shvr 50 sessions')
+    ax2.title.set_text('zic vs shvr 500 sessions')
 
 def trader_specs_two(R, n):
     SHVR_num = (n*R)//100
@@ -82,7 +78,7 @@ def plot_wins(res50: list, res500: list):
         shvr50 = res50[i][0]
         zic50 = res50[i][1]
         shvr500 = res500[i][0]
-        zic500 = res500[i][0]
+        zic500 = res500[i][1]
         for z in range(len(zic500)):
             if shvr500[z] > zic500[z]:
                 shvr_win500[i] += 1
@@ -92,19 +88,11 @@ def plot_wins(res50: list, res500: list):
                 shvr_win50[i] += 1
                 zic_win50[i] = len(zic50) - shvr_win50[i]
 
-    plt.subplot(1, 2, 1) # row 1, col 2 index 1
-    plt.plot(shvr_win50, 'r', zic_win50, 'b')
-    plt.title('zic vs shvr wins for ' + str(len(zic50)) + ' sessions')
-    plt.xlabel('ratios')
-    plt.ylabel('number of wins')
-
-    plt.subplot(1, 2, 2) # index 2
-    plt.plot(shvr_win500, 'r', zic_win500, 'b')
-    plt.title('zic vs shvr wins for ' + str(len(zic500)) + ' sessions')
-    plt.xlabel('ratios')
-    plt.ylabel('number of wins')
-
-    plt.show()
+    fig = plt.figure(figsize=(20, 7.5))
+    ax1 = fig.add_subplot(221)
+    ax1.plot(shvr_win50, 'b', zic_win50, 'r')
+    ax2 = fig.add_subplot(222)
+    ax2.plot(shvr_win500, 'b', zic_win500, 'r')
 
 def collect_pvals_norm(marketoutput: list):
     res = []
@@ -121,11 +109,11 @@ def A_B_test(p_val: list, data_: list, a: float = 0.05):
     for i in range(len(p_val)):
         if p_val[i][0] < a or p_val[i][1] < a:
             _, pval = stats.mannwhitneyu(data_[i][0], data_[i][1])
-            print("n="+ str(len(data_[0][0])) + " ratio: "+ str((i+1))+ " to "+ str(9-i) + " is NOT normal used NON-parametric test, p val is:", pval)
+            print("n="+ str(len(data_[0][0])) + ", ratio: "+ str((i+1))+ " to "+ str(9-i) + " is NOT normal used NON-parametric test, p val is:", "{:.4f}".format(pval))
             res.append(pval)
         elif p_val[i][0] > a and p_val[i][1] > a:
             _, pval = stats.ttest_ind(data_[i][0], data_[i][1], equal_var=False)
-            print("n="+ str(len(data_[0][0])) + " ratio: "+ str((i+1))+ " to "+ str(9-i)+" is NORMAL used parametric test, p val is:", pval)
+            print("n="+ str(len(data_[0][0])) + ", ratio: "+ str((i+1))+ " to "+ str(9-i)+" is NORMAL used parametric test, p val is:", "{:.4f}".format(pval))
             res.append(pval)
     
     return res
