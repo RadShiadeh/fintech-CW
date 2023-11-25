@@ -252,3 +252,44 @@ def plot_wins_4(res1: list, ratio1: list, res2: list, ratio2: list, res3: list, 
     fig2 = plt.figure(figsize=(20, 5))
     sub_plot_add(shvr_wins5, gvwy_wins5, zic_wins5, zip_wins5, fig2, 221, ratio5, 5, len(res5[0][0]))
     sub_plot_add(shvr_wins6, gvwy_wins6, zic_wins6, zip_wins6, fig2, 222, ratio6, 6, len(res6[0][0]))
+
+
+
+def run_market_sim_D(trial_id, no_sessions, supply_range, demand_range, start_time, end_time, path):
+    zipsh_num = 1
+    zic_num = 10
+    buyer_spec = [('ZIC', zic_num)]
+    seller_spec = [('ZIPSH', zipsh_num), ('ZIC', zic_num)]
+    trader_specs = {'sellers': seller_spec, 'buyers': buyer_spec}
+    total_avg_zic = []
+    total_avg_zipsh = []
+    
+    for _ in range(no_sessions):
+        supply_schedule = [{'from': start_time, 'to': end_time, 'ranges': [supply_range], 'stepmode': 'fixed'}]
+        demand_schedule = [{'from': start_time, 'to': end_time, 'ranges': [demand_range], 'stepmode': 'fixed'}]
+        order_interval = 60
+        order_sched = {'sup': supply_schedule, 'dem': demand_schedule,
+                    'interval': order_interval, 'timemode': 'periodic'}
+        dump_flags = {'dump_blotters': False, 'dump_lobs': False, 'dump_strats': False,
+                            'dump_avgbals': True, 'dump_tape': False}
+
+        verbose = False
+        market_session(trial_id, start_time, end_time, trader_specs, order_sched, dump_flags, verbose)
+        _, df_profit = make_df_D(path)
+        _zic, _zipsh = collect_avg_profit_D(df_profit)
+        total_avg_zipsh.append(_zipsh)
+        total_avg_zic.append(_zic)
+    
+    return total_avg_zipsh, total_avg_zic
+
+def make_df_D(path: str):
+    df = pd.read_csv(path)
+    df.columns =  ['name', 'time', 'curr best bid', 'curr best offer', 'trader1', 'total profit1', 'no. 1', 'avg profit1', 'trader2', 'total profit2', 'no. 2', 'avg profit2', 'err']
+    df_profit = df[['avg profit1', 'avg profit2']]
+    df_profit.columns = ['ZIPSH', 'ZIC']
+    return df, df_profit
+
+def collect_avg_profit_D(df):
+    _zic = df['ZIC'][len(df)-1]
+    _zipsh = df['ZIPSH'][len(df)-1]
+    return _zic, _zipsh
