@@ -190,3 +190,65 @@ def find_bigger(pvals: list):
         if p > 0.05:
             res.append(i)
     return res
+
+def plot_performance_same_ratio(res50, res500):
+    fig = plt.figure(figsize=(20, 7.5))
+    ax1 = fig.add_subplot(221)
+    ax1.plot(res50[0], 'r', res50[1], 'g', res50[2], 'b', res50[3], 'y')
+    ax1.set_xlabel('session')
+    ax1.set_ylabel('average profit')
+    ax2 = fig.add_subplot(222)
+    ax2.plot(res500[0], 'r', res500[1], 'g', res500[2], 'b', res500[3], 'y')
+    ax2.set_xlabel('session')
+    ax2.set_ylabel('average profit')
+
+    ax1.title.set_text('zic vs zip vs shvr vs gvwy avg profit')
+    ax2.title.set_text('zic vs zip vs shvr vs gvwy avg profit')
+
+def gather_wins(res):
+    gvwy_wins = [0] * 4
+    shvr_wins = [0] * 4
+    zic_wins = [0] * 4
+    zip_wins = [0] * 4
+
+    for i in range(4):
+        shvr = res[i][0]
+        gvwy = res[i][1]
+        zic = res[i][2]
+        zip_ = res[i][3]
+        for z in range(len(shvr)):
+            if shvr[z] > gvwy[z] and shvr[z] > zic[z] and shvr[z] > zip_[z]:
+                shvr_wins[i] += 1
+            if gvwy[z] > shvr[z] and gvwy[z] > zic[z] and gvwy[z] > zip_[z]:
+                gvwy_wins[i] += 1
+            if zic[z] > shvr[z] and zic[z] > gvwy[z] and zic[z] > zip_[z]:
+                zic_wins[i] += 1
+            if zip_[z] > shvr[z] and zip_[z] > zic[z] and zip_[z] > gvwy[z]:
+                zip_wins[i] += 1
+    return shvr_wins, gvwy_wins, zic_wins, zip_wins
+
+def sub_plot_add(shvrw, gvwyw, zicw, zipw, fig, index, ratio, axID, n):
+    ax = "ax"+str(axID)
+    ax = fig.add_subplot(index)
+    ax.plot(shvrw, 'r', gvwyw, 'g', zicw, 'b', zipw, 'y')
+    title = 'for ratio ' + str(ratio) +', trader wins per permutation in ' + str(n) + ' sessions'
+    ax.title.set_text(title)
+
+
+def plot_wins_4(res1: list, ratio1: list, res2: list, ratio2: list, res3: list, ratio3: list, res4: list, ratio4: list, res5, ratio5, res6, ratio6):
+    shvr_wins1, gvwy_wins1, zic_wins1, zip_wins1 = gather_wins(res1)
+    shvr_wins2, gvwy_wins2, zic_wins2, zip_wins2 = gather_wins(res2)
+    shvr_wins3, gvwy_wins3, zic_wins3, zip_wins3 = gather_wins(res3)
+    shvr_wins4, gvwy_wins4, zic_wins4, zip_wins4 = gather_wins(res4)
+    shvr_wins5, gvwy_wins5, zic_wins5, zip_wins5 = gather_wins(res5)
+    shvr_wins6, gvwy_wins6, zic_wins6, zip_wins6 = gather_wins(res6)
+
+    fig1 = plt.figure(figsize=(20, 7))
+    
+    sub_plot_add(shvr_wins1, gvwy_wins1, zic_wins1, zip_wins1, fig1, 221, ratio1, 1, len(res1[0][0]))
+    sub_plot_add(shvr_wins2, gvwy_wins2, zic_wins2, zip_wins2, fig1, 222, ratio2, 2, len(res2[0][0]))
+    sub_plot_add(shvr_wins3, gvwy_wins3, zic_wins3, zip_wins3, fig1, 223, ratio3, 3, len(res3[0][0]))
+    sub_plot_add(shvr_wins4, gvwy_wins4, zic_wins4, zip_wins4, fig1, 224, ratio4, 4, len(res4[0][0]))
+    fig2 = plt.figure(figsize=(20, 5))
+    sub_plot_add(shvr_wins5, gvwy_wins5, zic_wins5, zip_wins5, fig2, 221, ratio5, 5, len(res5[0][0]))
+    sub_plot_add(shvr_wins6, gvwy_wins6, zic_wins6, zip_wins6, fig2, 222, ratio6, 6, len(res6[0][0]))
