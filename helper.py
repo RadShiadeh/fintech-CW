@@ -186,7 +186,7 @@ def if_norm(res):
 
 def find_bigger(pvals: list):
     res = []
-    for p in pvals:
+    for i, p in enumerate(pvals):
         if p > 0.05:
             res.append(i)
     return res
