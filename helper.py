@@ -183,3 +183,10 @@ def if_norm(res):
     p_vals.append([p_shvr, p_gvwy, p_zic, p_zip])
 
     return p_vals
+
+def find_bigger(pvals: list):
+    res = []
+    for p in pvals:
+        if p > 0.05:
+            res.append(i)
+    return res
