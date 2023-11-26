@@ -258,11 +258,13 @@ def plot_wins_4(res1: list, ratio1: list, res2: list, ratio2: list, res3: list, 
 def run_market_sim_D(trial_id, no_sessions, supply_range, demand_range, start_time, end_time, path):
     zipsh_num = 1
     zic_num = 10
-    buyer_spec = [('ZIC', zic_num)]
-    seller_spec = [('ZIPSH', zipsh_num), ('ZIC', zic_num)]
+    buyer_spec = [('ZIPSH', zipsh_num), ('ZIC', zic_num)]
+    seller_spec = [('ZIC', zic_num)]
     trader_specs = {'sellers': seller_spec, 'buyers': buyer_spec}
     total_avg_zic = []
     total_avg_zipsh = []
+    avg_pps_total = []
+    total_avg_prof_per_session = []
     
     for _ in range(no_sessions):
         supply_schedule = [{'from': start_time, 'to': end_time, 'ranges': [supply_range], 'stepmode': 'fixed'}]
@@ -276,20 +278,37 @@ def run_market_sim_D(trial_id, no_sessions, supply_range, demand_range, start_ti
         verbose = False
         market_session(trial_id, start_time, end_time, trader_specs, order_sched, dump_flags, verbose)
         _, df_profit = make_df_D(path)
-        _zic, _zipsh = collect_avg_profit_D(df_profit)
+        _zic, _zipsh, avg_pps, avg_prof_per_sec = collect_avg_profit_D(df_profit)
         total_avg_zipsh.append(_zipsh)
         total_avg_zic.append(_zic)
+        avg_pps_total.append(avg_pps)
+        total_avg_prof_per_session.append(avg_prof_per_sec)
     
-    return total_avg_zipsh, total_avg_zic
+    return total_avg_zipsh, total_avg_zic, avg_pps_total, total_avg_prof_per_session
 
 def make_df_D(path: str):
     df = pd.read_csv(path)
     df.columns =  ['name', 'time', 'curr best bid', 'curr best offer', 'trader1', 'total profit1', 'no. 1', 'avg profit1', 'trader2', 'total profit2', 'no. 2', 'avg profit2', 'err']
-    df_profit = df[['avg profit1', 'avg profit2']]
-    df_profit.columns = ['ZIPSH', 'ZIC']
+    df_profit = df[['time', 'avg profit1', 'avg profit2']]
+    df_profit.columns = ['time', 'ZIPSH', 'ZIC']
     return df, df_profit
 
 def collect_avg_profit_D(df):
+    average_pps_per_day = []
+    prof_per_sec = []
     _zic = df['ZIC'][len(df)-1]
     _zipsh = df['ZIPSH'][len(df)-1]
-    return _zic, _zipsh
+    _avg_pps = _zipsh/df['time'][len(df)-1]
+    n = 1
+    for i in range(len(df)):
+            if i < 1:
+                continue
+            if df['time'][i] == df['time'][i-1]:
+                continue
+            pf = (df['ZIPSH'][i] - df['ZIPSH'][i-1])/(df['time'][i] - df['time'][i-1])
+            prof_per_sec.append(pf)
+            if df['time'][i] >= 60*60*24*n:
+                n+=1
+                average_pps_per_day.append((sum(prof_per_sec)/len(prof_per_sec)))
+
+    return _zic, _zipsh, _avg_pps, average_pps_per_day
