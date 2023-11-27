@@ -269,7 +269,7 @@ def run_market_sim_D(trial_id, no_sessions, supply_range, demand_range, start_ti
     for _ in range(no_sessions):
         supply_schedule = [{'from': start_time, 'to': end_time, 'ranges': [supply_range], 'stepmode': 'fixed'}]
         demand_schedule = [{'from': start_time, 'to': end_time, 'ranges': [demand_range], 'stepmode': 'fixed'}]
-        order_interval = 60
+        order_interval = 1
         order_sched = {'sup': supply_schedule, 'dem': demand_schedule,
                     'interval': order_interval, 'timemode': 'periodic'}
         dump_flags = {'dump_blotters': False, 'dump_lobs': False, 'dump_strats': False,
@@ -310,5 +310,6 @@ def collect_avg_profit_D(df):
             if df['time'][i] >= 60*60*24*n:
                 n+=1
                 average_pps_per_day.append((sum(prof_per_sec)/len(prof_per_sec)))
+                prof_per_sec = []
 
     return _zic, _zipsh, _avg_pps, average_pps_per_day
