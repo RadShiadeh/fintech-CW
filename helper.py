@@ -101,9 +101,13 @@ def plot_wins(res50: list, res500: list):
 
     fig = plt.figure(figsize=(20, 7.5))
     ax1 = fig.add_subplot(221)
-    ax1.plot(shvr_win50, 'b', zic_win50, 'r')
+    ax1.plot(shvr_win50, 'b', label='shvr')
+    ax1.plot(zic_win50, 'r', label='zic')
+    ax1.legend()
     ax2 = fig.add_subplot(222)
-    ax2.plot(shvr_win500, 'b', zic_win500, 'r')
+    ax2.plot(shvr_win500, 'b', label='shvr')
+    ax2.plot(zic_win500, 'r', label='zic')
+    ax2.legend()
 
 def collect_pvals_norm(marketoutput: list):
     res = []
@@ -222,10 +226,14 @@ def plot_performance_same_ratio(res50):
     col = ['tab:red', 'tab:green', 'tab:blue', 'tab:red']
     fig = plt.figure(figsize=(20, 7.5))
     ax1 = fig.add_subplot(221)
-    ax1.plot(res50[0], 'r', res50[1], 'g', res50[2], 'b', res50[3], 'y')
+    ax1.plot(res50[0], 'r', label='shvr')
+    ax1.plot(res50[1], 'g', label='gvwy')
+    ax1.plot(res50[2], 'b', label='zic')
+    ax1.plot(res50[3], 'y', label='zip') #res50[1], 'g', res50[2], 'b', res50[3], 'y'
     ax1.set_xlabel('session')
     ax1.set_ylabel('average profit')
     ax1.title.set_text('zic vs zip vs shvr vs gvwy avg profit')
+    ax1.legend()
     ax2 = fig.add_subplot(222)
     ax2.bar(xlabels, vals, color=col)
     ax2.set_xlabel("trader")
@@ -257,9 +265,13 @@ def gather_wins(res):
 def sub_plot_add(shvrw, gvwyw, zicw, zipw, fig, index, ratio, axID, n):
     ax = "ax"+str(axID)
     ax = fig.add_subplot(index)
-    ax.plot(shvrw, 'r', gvwyw, 'g', zicw, 'b', zipw, 'y')
+    ax.plot(shvrw, 'r', label='shvr')
+    ax.plot(gvwyw, 'g', label='gvwy')
+    ax.plot(zicw, 'b', label='zic')
+    ax.plot(zipw, 'y', label='zip')
     title = 'for ratio ' + str(ratio) +', trader wins per permutation in ' + str(n) + ' sessions'
     ax.title.set_text(title)
+    ax.legend()
 
 
 def plot_wins_4(res1: list, ratio1: list, res2: list, ratio2: list, res3: list, ratio3: list):
@@ -286,8 +298,7 @@ def run_market_sim_D(trial_id, no_sessions, supply_range, demand_range, start_ti
     avg_pps_total = []
     total_avg_prof_per_session = []
     
-    for i in range(no_sessions):
-        print(i)
+    for _ in range(no_sessions):
         supply_schedule = [{'from': start_time, 'to': end_time, 'ranges': [supply_range], 'stepmode': 'fixed'}]
         demand_schedule = [{'from': start_time, 'to': end_time, 'ranges': [demand_range], 'stepmode': 'fixed'}]
         order_interval = 30
