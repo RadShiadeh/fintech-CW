@@ -1401,8 +1401,8 @@ class Trader_ZIP(Trader):
         # if no params specified then defaults to ZIP with strat values as in Cliff1997
 
         # default parameter values
-        k = 4
-        optimizer = None    # no optimizer => plain non-optimizing ZIP
+        k = 2
+        optimizer = 'ZIPSH'    # no optimizer => plain non-optimizing ZIP
         logging = False
 
         # did call provide different params?

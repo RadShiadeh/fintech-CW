@@ -28,6 +28,17 @@ def plot_performance(n50mean_zic, n500mean_zic, n50mean_shvr, n500mean_shvr):
     ax1.title.set_text('zic vs shvr 50 sessions')
     ax2.title.set_text('zic vs shvr 500 sessions')
 
+def compare(shvr, zic):
+    shvr_w = 0
+    zic_w = 0
+    for i in range(len(shvr)):
+        if shvr[i] - zic[i] > 0:
+            shvr_w += 1
+        else:
+            zic_w += 1
+    
+    return shvr_w, zic_w
+
 def trader_specs_two(R, n):
     SHVR_num = (n*R)//100
     zic_num = ((100-R)*n)//100
@@ -191,19 +202,35 @@ def find_bigger(pvals: list):
             res.append(i)
     return res
 
-def plot_performance_same_ratio(res50, res500):
+def plot_performance_same_ratio(res50):
+    shvr_w = 0
+    gvwy_w = 0
+    zic_w = 0
+    zip_w = 0
+    for i in range(len(res50[0])):
+        if res50[0][i] > res50[1][i] and res50[0][i] > res50[2][i] and res50[0][i] > res50[3][i]:
+            shvr_w += 1
+        elif res50[1][i] > res50[0][i] and res50[1][i] > res50[2][i] and res50[1][i] > res50[3][i]:
+            gvwy_w += 1
+        elif res50[2][i] > res50[0][i] and res50[2][i] > res50[1][i] and res50[2][i] > res50[3][i]:
+            zic_w += 1
+        else:
+            zip_w+=1
+    
+    xlabels = ['shvr', 'gvwy', 'zic', 'zip']
+    vals = [shvr_w, gvwy_w, zic_w, zip_w]
+    col = ['tab:red', 'tab:green', 'tab:blue', 'tab:red']
     fig = plt.figure(figsize=(20, 7.5))
     ax1 = fig.add_subplot(221)
     ax1.plot(res50[0], 'r', res50[1], 'g', res50[2], 'b', res50[3], 'y')
     ax1.set_xlabel('session')
     ax1.set_ylabel('average profit')
-    ax2 = fig.add_subplot(222)
-    ax2.plot(res500[0], 'r', res500[1], 'g', res500[2], 'b', res500[3], 'y')
-    ax2.set_xlabel('session')
-    ax2.set_ylabel('average profit')
-
     ax1.title.set_text('zic vs zip vs shvr vs gvwy avg profit')
-    ax2.title.set_text('zic vs zip vs shvr vs gvwy avg profit')
+    ax2 = fig.add_subplot(222)
+    ax2.bar(xlabels, vals, color=col)
+    ax2.set_xlabel("trader")
+    ax2.set_ylabel("wins")
+    ax2.title.set_text('same ratio, number of wins')
 
 def gather_wins(res):
     gvwy_wins = [0] * 4
@@ -235,23 +262,16 @@ def sub_plot_add(shvrw, gvwyw, zicw, zipw, fig, index, ratio, axID, n):
     ax.title.set_text(title)
 
 
-def plot_wins_4(res1: list, ratio1: list, res2: list, ratio2: list, res3: list, ratio3: list, res4: list, ratio4: list, res5, ratio5, res6, ratio6):
+def plot_wins_4(res1: list, ratio1: list, res2: list, ratio2: list, res3: list, ratio3: list):
     shvr_wins1, gvwy_wins1, zic_wins1, zip_wins1 = gather_wins(res1)
     shvr_wins2, gvwy_wins2, zic_wins2, zip_wins2 = gather_wins(res2)
     shvr_wins3, gvwy_wins3, zic_wins3, zip_wins3 = gather_wins(res3)
-    shvr_wins4, gvwy_wins4, zic_wins4, zip_wins4 = gather_wins(res4)
-    shvr_wins5, gvwy_wins5, zic_wins5, zip_wins5 = gather_wins(res5)
-    shvr_wins6, gvwy_wins6, zic_wins6, zip_wins6 = gather_wins(res6)
 
     fig1 = plt.figure(figsize=(20, 7))
     
     sub_plot_add(shvr_wins1, gvwy_wins1, zic_wins1, zip_wins1, fig1, 221, ratio1, 1, len(res1[0][0]))
     sub_plot_add(shvr_wins2, gvwy_wins2, zic_wins2, zip_wins2, fig1, 222, ratio2, 2, len(res2[0][0]))
     sub_plot_add(shvr_wins3, gvwy_wins3, zic_wins3, zip_wins3, fig1, 223, ratio3, 3, len(res3[0][0]))
-    sub_plot_add(shvr_wins4, gvwy_wins4, zic_wins4, zip_wins4, fig1, 224, ratio4, 4, len(res4[0][0]))
-    fig2 = plt.figure(figsize=(20, 5))
-    sub_plot_add(shvr_wins5, gvwy_wins5, zic_wins5, zip_wins5, fig2, 221, ratio5, 5, len(res5[0][0]))
-    sub_plot_add(shvr_wins6, gvwy_wins6, zic_wins6, zip_wins6, fig2, 222, ratio6, 6, len(res6[0][0]))
 
 
 
@@ -266,13 +286,14 @@ def run_market_sim_D(trial_id, no_sessions, supply_range, demand_range, start_ti
     avg_pps_total = []
     total_avg_prof_per_session = []
     
-    for _ in range(no_sessions):
+    for i in range(no_sessions):
+        print(i)
         supply_schedule = [{'from': start_time, 'to': end_time, 'ranges': [supply_range], 'stepmode': 'fixed'}]
         demand_schedule = [{'from': start_time, 'to': end_time, 'ranges': [demand_range], 'stepmode': 'fixed'}]
-        order_interval = 1
+        order_interval = 30
         order_sched = {'sup': supply_schedule, 'dem': demand_schedule,
                     'interval': order_interval, 'timemode': 'periodic'}
-        dump_flags = {'dump_blotters': False, 'dump_lobs': False, 'dump_strats': False,
+        dump_flags = {'dump_blotters': False, 'dump_lobs': False, 'dump_strats': True,
                             'dump_avgbals': True, 'dump_tape': False}
 
         verbose = False
@@ -290,8 +311,12 @@ def make_df_D(path: str):
     df = pd.read_csv(path)
     df.columns =  ['name', 'time', 'curr best bid', 'curr best offer', 'trader1', 'total profit1', 'no. 1', 'avg profit1', 'trader2', 'total profit2', 'no. 2', 'avg profit2', 'err']
     df_profit = df[['time', 'avg profit1', 'avg profit2']]
-    df_profit.columns = ['time', 'ZIPSH', 'ZIC']
+    df_profit.columns = ['time', 'ZIC', 'ZIPSH']
     return df, df_profit
+
+def make_df_strat(path: str):
+    df = pd.read_csv(path)
+    df.columns = []
 
 def collect_avg_profit_D(df):
     average_pps_per_day = []
