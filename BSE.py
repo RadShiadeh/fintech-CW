@@ -1402,7 +1402,7 @@ class Trader_ZIP(Trader):
 
         # default parameter values
         k = 4
-        optimizer = 'zipsh'    # no optimizer => plain non-optimizing ZIP
+        optimizer = 'ZIPSH'    # no optimizer => plain non-optimizing ZIP
         logging = False
 
         # did call provide different params?
