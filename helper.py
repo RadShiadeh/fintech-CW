@@ -157,7 +157,6 @@ def df_four(path):
     return df, df_profit    
 
 def run_market_sim_four(trial_id, no_sessions, t, n, supply_range, demand_range, start_time, end_time):
-
     res = [[] for _ in range(4)]
 
     seller_spec = [('SHVR', int(t[0]*n/100)), ('GVWY', int(t[1]*n/100)), ('ZIC', int(t[2]*n/100)), ('ZIP', int(t[3]*n/100))]
