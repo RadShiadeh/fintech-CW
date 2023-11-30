@@ -286,16 +286,16 @@ def plot_wins_4(res1: list, ratio1: list, res2: list, ratio2: list, res3: list, 
 
 
 
-def run_market_sim_D(trial_id, no_sessions, supply_range, demand_range, start_time, end_time, path):
+def run_market_sim_D(trial_id, no_sessions, supply_range, demand_range, start_time, end_time, path, path_strat):
     zipsh_num = 1
     zic_num = 10
     buyer_spec = [('ZIPSH', zipsh_num), ('ZIC', zic_num)]
     seller_spec = [('ZIC', zic_num)]
     trader_specs = {'sellers': seller_spec, 'buyers': buyer_spec}
-    total_avg_zic = []
     total_avg_zipsh = []
     avg_pps_total = []
     total_avg_prof_per_session = []
+    hyper_params = [[] for _ in range(5)]
     
     for _ in range(no_sessions):
         supply_schedule = [{'from': start_time, 'to': end_time, 'ranges': [supply_range], 'stepmode': 'fixed'}]
@@ -308,25 +308,54 @@ def run_market_sim_D(trial_id, no_sessions, supply_range, demand_range, start_ti
 
         verbose = False
         market_session(trial_id, start_time, end_time, trader_specs, order_sched, dump_flags, verbose)
-        _, df_profit = make_df_D(path)
-        _zic, _zipsh, avg_pps, avg_prof_per_sec = collect_avg_profit_D(df_profit)
+        df_strats, df_profit = make_df_D(path, path_strat)
+        b, m, ca, cr, mb = collect_hyperparams(df_strats)
+        hyper_params[0].append(b)
+        hyper_params[1].append(m)
+        hyper_params[2].append(ca)
+        hyper_params[3].append(cr)
+        hyper_params[4].append(mb)        
+        _, _zipsh, avg_pps, avg_prof_per_sec = collect_avg_profit_D(df_profit)
         total_avg_zipsh.append(_zipsh)
-        total_avg_zic.append(_zic)
         avg_pps_total.append(avg_pps)
         total_avg_prof_per_session.append(avg_prof_per_sec)
     
-    return total_avg_zipsh, total_avg_zic, avg_pps_total, total_avg_prof_per_session
+    return total_avg_zipsh, avg_pps_total, total_avg_prof_per_session, hyper_params
 
-def make_df_D(path: str):
+def make_df_D(path: str, path_strat):
     df = pd.read_csv(path)
     df.columns =  ['name', 'time', 'curr best bid', 'curr best offer', 'trader1', 'total profit1', 'no. 1', 'avg profit1', 'trader2', 'total profit2', 'no. 2', 'avg profit2', 'err']
     df_profit = df[['time', 'avg profit1', 'avg profit2']]
     df_profit.columns = ['time', 'ZIC', 'ZIPSH']
-    return df, df_profit
 
-def make_df_strat(path: str):
-    df = pd.read_csv(path)
-    df.columns = []
+    imap = {1: 'time', 26: 'mBuy', 30: 'beta', 32: 'momentum', 34: 'c_r', 36: 'c_a'}
+
+    df_st = pd.read_csv(path_strat)
+    cols = []
+    for i in range(38):
+        if i in imap:
+            cols.append(imap[i])
+        else: 
+            cols.append('idc')
+    df_st.columns = cols
+    df_strat = df_st[['time', 'mBuy', 'beta', 'momentum', 'c_r', 'c_a']]
+
+    return df_strat, df_profit
+
+def collect_hyperparams(df):
+    beta = []
+    momentum = []
+    c_r = []
+    c_a = []
+    mBuy = []
+    for i in range(len(df)):
+        beta.append(df['beta'][i])
+        momentum.append(df['momentum'][i])
+        c_r.append(df['c_r'][i])
+        c_a.append(df['c_a'][i])
+        mBuy.append(df['mBuy'][i])
+    
+    return beta, momentum, c_a, c_r, mBuy
 
 def collect_avg_profit_D(df):
     average_pps_per_day = []
