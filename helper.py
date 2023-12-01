@@ -289,7 +289,7 @@ def plot_wins_4(res1: list, ratio1: list, res2: list, ratio2: list, res3: list, 
 def run_market_sim_D(trial_id, no_sessions, supply_range, demand_range, start_time, end_time, path, path_strat):
     zipsh_num = 1
     zic_num = 10
-    buyer_spec = [('ZIPSH', zipsh_num), ('ZIC', zic_num)]
+    buyer_spec = [('ZIPSH', zipsh_num, {'k': 4, 'optimizer': 'ZIPSH'}), ('ZIC', zic_num)]
     seller_spec = [('ZIC', zic_num)]
     trader_specs = {'sellers': seller_spec, 'buyers': buyer_spec}
     total_avg_zipsh = []
@@ -377,3 +377,53 @@ def collect_avg_profit_D(df):
                 prof_per_sec = []
 
     return _zic, _zipsh, _avg_pps, average_pps_per_day
+
+def prof_increase(tvg):
+    #tvg total average profit
+    total_prof_increase = []
+    for i in range(len(tvg)):
+        for _ in range(len(tvg[i])):
+            prof_increase = (tvg[i][len(tvg[i]-1)]/tvg[i][0]) * 100
+            total_prof_increase.append(prof_increase)
+    return total_prof_increase
+
+def plot_params_pps(tpi, betas, mom, c_a, c_r, mBuy, n):
+    #tpi = total_avg_profit_perS[i]
+    fig = plt.figure(figsize=(20, 10))
+    ax1 = fig.add_subplot(221)
+    ax1.plot(tpi, 'r', label='zipsh') #res50[1], 'g', res50[2], 'b', res50[3], 'y'
+    ax1.set_xlabel('day')
+    ax1.set_ylabel('average pps')
+    ax1.title.set_text('avg pps for zipsh in the session ' + str(n))
+    ax1.legend()
+    ax2 = fig.add_subplot(222)
+    ax2.plot(betas, 'b', label='beta')
+    ax2.set_xlabel('day')
+    ax2.set_ylabel('vals')
+    ax2.title.set_text('beta vals in session: ' + str(n))
+    ax2.legend()
+    ax3 = fig.add_subplot(223)
+    ax3.plot(mom, 'b', label='momentum')
+    ax3.set_xlabel('day')
+    ax3.set_ylabel('vals')
+    ax3.title.set_text('momentum vals in session: ' + str(n))
+    ax3.legend()
+    ax4 = fig.add_subplot(224)
+    ax4.plot(mBuy, 'b', label='margin buy')
+    ax4.set_xlabel('day')
+    ax4.set_ylabel('vals')
+    ax4.title.set_text('margin buy vals in session: ' + str(n))
+    ax4.legend()
+    fig2 = plt.figure(figsize=(20, 7.5))
+    ax = fig2.add_subplot(221)
+    ax.plot(c_a, 'b', label='c_a')
+    ax.set_xlabel('day')
+    ax.set_ylabel('vals')
+    ax.title.set_text('c_a vals in session: ' + str(n))
+    ax.legend()
+    ax5 = fig2.add_subplot(222)
+    ax5.plot(c_r, 'b', label='c_r')
+    ax5.set_xlabel('day')
+    ax5.set_ylabel('vals')
+    ax5.title.set_text('c_r vals in session: ' + str(n))
+    ax5.legend()
