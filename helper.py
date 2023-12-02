@@ -369,7 +369,6 @@ def collect_avg_profit_D(df):
             continue
 
         if df['ZIPSH'][i] < df['ZIPSH'][i-1]:
-            print("mutation happened")
             continue
 
         pf = (df['ZIPSH'][i] - df['ZIPSH'][i-1])/(df['time'][i] - df['time'][i-1])
@@ -377,6 +376,11 @@ def collect_avg_profit_D(df):
 
         if df['time'][i] >= 60*60*24*n:
             n+=1
+            m = np.mean(prof_per_sec)
+            std = np.std(prof_per_sec)
+            for j, x in enumerate(prof_per_sec):
+                prof_per_sec[j] = (x - m)/std
+                
             average_pps_per_day.append((sum(prof_per_sec)/len(prof_per_sec)))
             prof_per_sec = []
 
