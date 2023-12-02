@@ -362,17 +362,23 @@ def collect_avg_profit_D(df):
     _avg_pps = _zipsh/df['time'][len(df)-1]
     n = 1
     for i in range(len(df)):
-            if i < 1:
-                continue
-            if df['time'][i] == df['time'][i-1]:
-                continue
-            pf = (df['ZIPSH'][i] - df['ZIPSH'][i-1])/(df['time'][i] - df['time'][i-1])
-            prof_per_sec.append(pf)
-            if df['time'][i] >= 60*60*24*n:
-                n+=1
-                prof_per_sec = preprocessing.normalize(prof_per_sec)
-                average_pps_per_day.append((sum(prof_per_sec)/len(prof_per_sec)))
-                prof_per_sec = []
+        if i < 1:
+            continue
+
+        if df['time'][i] == df['time'][i-1]:
+            continue
+
+        if df['ZIPSH'][i] < df['ZIPSH'][i-1]:
+            print("mutation happened")
+            continue
+
+        pf = (df['ZIPSH'][i] - df['ZIPSH'][i-1])/(df['time'][i] - df['time'][i-1])
+        prof_per_sec.append(pf)
+
+        if df['time'][i] >= 60*60*24*n:
+            n+=1
+            average_pps_per_day.append((sum(prof_per_sec)/len(prof_per_sec)))
+            prof_per_sec = []
 
     return _zic, _zipsh, _avg_pps, average_pps_per_day
 
@@ -390,38 +396,38 @@ def plot_params_pps(tpi, betas, mom, c_a, c_r, mBuy, n):
     fig = plt.figure(figsize=(20, 10))
     ax1 = fig.add_subplot(221)
     ax1.plot(tpi, 'r', label='zipsh') #res50[1], 'g', res50[2], 'b', res50[3], 'y'
-    ax1.set_xlabel('day')
+    ax1.set_xlabel('changes')
     ax1.set_ylabel('average pps')
     ax1.title.set_text('avg pps for zipsh in the session ' + str(n))
     ax1.legend()
     ax2 = fig.add_subplot(222)
     ax2.plot(betas, 'b', label='beta')
-    ax2.set_xlabel('day')
+    ax2.set_xlabel('changes')
     ax2.set_ylabel('vals')
     ax2.title.set_text('beta vals in session: ' + str(n))
     ax2.legend()
     ax3 = fig.add_subplot(223)
     ax3.plot(mom, 'b', label='momentum')
-    ax3.set_xlabel('day')
+    ax3.set_xlabel('changes')
     ax3.set_ylabel('vals')
     ax3.title.set_text('momentum vals in session: ' + str(n))
     ax3.legend()
     ax4 = fig.add_subplot(224)
     ax4.plot(mBuy, 'b', label='margin buy')
-    ax4.set_xlabel('day')
+    ax4.set_xlabel('changes')
     ax4.set_ylabel('vals')
     ax4.title.set_text('margin buy vals in session: ' + str(n))
     ax4.legend()
     fig2 = plt.figure(figsize=(20, 7.5))
     ax = fig2.add_subplot(221)
     ax.plot(c_a, 'b', label='c_a')
-    ax.set_xlabel('day')
+    ax.set_xlabel('changes')
     ax.set_ylabel('vals')
     ax.title.set_text('c_a vals in session: ' + str(n))
     ax.legend()
     ax5 = fig2.add_subplot(222)
     ax5.plot(c_r, 'b', label='c_r')
-    ax5.set_xlabel('day')
+    ax5.set_xlabel('changes')
     ax5.set_ylabel('vals')
     ax5.title.set_text('c_r vals in session: ' + str(n))
     ax5.legend()
