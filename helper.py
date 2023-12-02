@@ -4,6 +4,7 @@ from scipy import stats
 import pandas as pd
 from scipy.stats import mstats
 from BSE import market_session
+from sklearn import preprocessing
 
 def make_df(path: str):
     df = pd.read_csv(path)
@@ -369,6 +370,7 @@ def collect_avg_profit_D(df):
             prof_per_sec.append(pf)
             if df['time'][i] >= 60*60*24*n:
                 n+=1
+                prof_per_sec = preprocessing.normalize(prof_per_sec)
                 average_pps_per_day.append((sum(prof_per_sec)/len(prof_per_sec)))
                 prof_per_sec = []
 
