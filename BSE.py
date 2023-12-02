@@ -1372,11 +1372,11 @@ class Trader_ZIP(Trader):
 
         def init_beta():
             # in Cliff 1997 the initial beta values are U(0.1, 0.5)
-            return random.uniform(0.001, 0.001)
+            return random.uniform(0.1, 0.5)
 
         def init_momntm():
             # in Cliff 1997 the initial momentum values are U(0.0, 0.1)
-            return random.uniform(0.000, 0.001)
+            return random.uniform(0.0, 0.1)
 
         def init_ca():
             # in Cliff 1997 c_a was a system constant, the same for all traders, set to 0.05
@@ -1390,7 +1390,7 @@ class Trader_ZIP(Trader):
 
         def init_margin():
             # in Cliff 1997 the initial margin values are U(0.05, 0.35)
-            return random.uniform(0.001, 0.001)
+            return random.uniform(0.05, 0.35)
 
         def init_stratwaittime():
             # not in Cliff 1997: use whatever limits you think best.
