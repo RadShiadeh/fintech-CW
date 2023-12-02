@@ -286,11 +286,7 @@ def plot_wins_4(res1: list, ratio1: list, res2: list, ratio2: list, res3: list, 
 
 
 
-def run_market_sim_D(trial_id, no_sessions, supply_range, demand_range, start_time, end_time, path, path_strat):
-    zipsh_num = 1
-    zic_num = 10
-    buyer_spec = [('ZIPSH', zipsh_num, {'k': 4, 'optimizer': 'ZIPSH'}), ('ZIC', zic_num)]
-    seller_spec = [('ZIC', zic_num)]
+def run_market_sim_D(trial_id, no_sessions, supply_range, demand_range, start_time, end_time, path, path_strat, buyer_spec, seller_spec):
     trader_specs = {'sellers': seller_spec, 'buyers': buyer_spec}
     total_avg_zipsh = []
     avg_pps_total = []
@@ -427,3 +423,28 @@ def plot_params_pps(tpi, betas, mom, c_a, c_r, mBuy, n):
     ax5.set_ylabel('vals')
     ax5.title.set_text('c_r vals in session: ' + str(n))
     ax5.legend()
+
+
+def test(taps):
+    avg_total = []
+    for i in range(len(taps)):
+        avg_end_eachD = []
+        for j in range(len(taps[i])-1):
+            pf = (taps[i][j+1] *100) / taps[i][j]
+            if pf <=0:
+                avg_end_eachD.append(0)
+            else:
+                avg_end_eachD.append(pf)
+        avg_total.append(np.mean(avg_end_eachD))
+    print(avg_total)
+
+    _, p = stats.shapiro(avg_total)
+
+    if p < 0.05:
+        print("not normal, using wilcoxen")
+        _, pval = stats.wilcoxon(avg_total)
+        return pval
+    else:
+        print("normal, using t-test")
+        _, pval = stats.ttest_1samp(avg_total, np.mean(0.05))
+        return pval
