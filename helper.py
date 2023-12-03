@@ -448,7 +448,6 @@ def test(taps):
             else:
                 avg_end_eachD.append(pf)
         avg_total.append(np.mean(avg_end_eachD))
-    print(avg_total)
 
     _, p = stats.shapiro(avg_total)
 
@@ -458,5 +457,5 @@ def test(taps):
         return pval
     else:
         print("normal, using t-test")
-        _, pval = stats.ttest_1samp(avg_total, np.mean(0.05))
+        _, pval = stats.ttest_1samp(avg_total, 300)
         return pval
