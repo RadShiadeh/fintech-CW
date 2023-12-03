@@ -2,9 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy import stats
 import pandas as pd
-from scipy.stats import mstats
 from BSE import market_session
-from sklearn import preprocessing
 
 def make_df(path: str):
     df = pd.read_csv(path)
@@ -319,6 +317,37 @@ def run_market_sim_D(trial_id, no_sessions, supply_range, demand_range, start_ti
     
     return total_avg_zipsh, avg_pps_total, total_avg_prof_per_session, hyper_params
 
+def run_market_d2(zipsh_num, k, zic_num, range1, range2, start_time, mid_time, end_time, ot, id, n, path, path_strat):
+    total_avg_prof_per_session = []
+    hyper_params = [[] for _ in range(5)]
+    buyers_spec = [('ZIPSH', 1, {'k': 4, 'optimizer': 'ZIPSH'}), ('ZIC', 5)]
+    sellers_spec = [('ZIC', 5)]
+    traders_spec = {'sellers':sellers_spec, 'buyers':buyers_spec}
+
+    for _ in range(n):
+        supply_schedule = [{'from': start_time, 'to': mid_time, 'ranges': [range1], 'stepmode': 'fixed'},
+                        {'from': mid_time, 'to': end_time, 'ranges': [range2], 'stepmode': 'fixed'}]
+        demand_schedule = supply_schedule
+
+        order_sched = {'sup': supply_schedule, 'dem': demand_schedule,
+                    'interval': ot, 'timemode': 'periodic'}
+        trial_id = id
+        dump_flags = {'dump_blotters': False, 'dump_lobs': False, 'dump_strats': True,
+                    'dump_avgbals': True, 'dump_tape': False}
+        verbose = False
+        market_session(trial_id, start_time, end_time, traders_spec, order_sched, dump_flags, verbose)
+        df_strats, df_profit = make_df_D(path, path_strat)
+        b, m, ca, cr, mb = collect_hyperparams(df_strats)
+        hyper_params[0].append(b)
+        hyper_params[1].append(m)
+        hyper_params[2].append(ca)
+        hyper_params[3].append(cr)
+        hyper_params[4].append(mb)        
+        _, _, _, avg_prof_per_sec = collect_avg_profit_D(df_profit)
+        total_avg_prof_per_session.append(avg_prof_per_sec)
+        
+    return total_avg_prof_per_session, hyper_params
+
 def make_df_D(path: str, path_strat):
     df = pd.read_csv(path)
     df.columns =  ['name', 'time', 'curr best bid', 'curr best offer', 'trader1', 'total profit1', 'no. 1', 'avg profit1', 'trader2', 'total profit2', 'no. 2', 'avg profit2', 'err']
@@ -369,19 +398,24 @@ def collect_avg_profit_D(df):
             continue
 
         if df['ZIPSH'][i] < df['ZIPSH'][i-1]:
+            val = (sum(prof_per_sec)/len(prof_per_sec))
+            if val <= 0:
+                val = 0
+            average_pps_per_day.append(val)
+            prof_per_sec = []
             continue
 
         pf = (df['ZIPSH'][i] - df['ZIPSH'][i-1])/(df['time'][i] - df['time'][i-1])
+        if pf < 0:
+            pf = 0
         prof_per_sec.append(pf)
 
         if df['time'][i] >= 60*60*24*n:
-            n+=1
-            m = np.mean(prof_per_sec)
-            std = np.std(prof_per_sec)
-            for j, x in enumerate(prof_per_sec):
-                prof_per_sec[j] = (x - m)/std
-                
-            average_pps_per_day.append((sum(prof_per_sec)/len(prof_per_sec)))
+            n+=1                
+            val = (sum(prof_per_sec)/len(prof_per_sec))
+            if val <= 0:
+                val = 0
+            average_pps_per_day.append(val)
             prof_per_sec = []
 
     return _zic, _zipsh, _avg_pps, average_pps_per_day
@@ -448,6 +482,7 @@ def test(taps):
             else:
                 avg_end_eachD.append(pf)
         avg_total.append(np.mean(avg_end_eachD))
+    print(avg_total)
 
     _, p = stats.shapiro(avg_total)
 
@@ -457,5 +492,6 @@ def test(taps):
         return pval
     else:
         print("normal, using t-test")
-        _, pval = stats.ttest_1samp(avg_total, 300)
+        s, pval = stats.ttest_1samp(avg_total, 0)
+        print(s)
         return pval
