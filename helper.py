@@ -499,12 +499,12 @@ def test(taps):
 
     if p < 0.05:
         print("not normal, using wilcoxen")
-        _, pval = stats.wilcoxon(avg_total)
-        return pval
+        _, f = stats.wilcoxon(avg_total)
+        return f
     else:
         print("normal, using t-test")
-        _, pval = stats.ttest_1samp(avg_total, 0)
-        return pval
+        _, f = stats.ttest_1samp(avg_total, 0)
+        return f
 
 def test_2(avg_prof):
     #collect averages at the end of each permutation, check for normality and then either use parametric t-test or non-parametric wilcoxen test for part D 2

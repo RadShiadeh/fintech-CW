@@ -1354,7 +1354,7 @@ class Trader_ZIP(Trader):
             margin_buy = gauss_mutate_clip(s['m_buy'], big_sdev, -1.0, 0)
             margin_sell = gauss_mutate_clip(s['m_sell'], big_sdev, 0.0, 1.0)
             beta = gauss_mutate_clip(s['beta'], big_sdev, 0.0, 1.0)
-            momntm = gauss_mutate_clip(s['momntm'], big_sdev, 0.0, 1.0)
+            momntm = gauss_mutate_clip(s['momntm'], big_sdev, 0.0, 0.01) #changed momentum to be between 0 and 0.1 instead of (0, 1)
             ca = gauss_mutate_clip(s['ca'], small_sdev, 0.0, 1.0)
             cr = gauss_mutate_clip(s['cr'], small_sdev, 0.0, 1.0)
             new_strat = {'m_buy': margin_buy, 'm_sell': margin_sell, 'beta': beta, 'momntm': momntm, 'ca': ca, 'cr': cr}
