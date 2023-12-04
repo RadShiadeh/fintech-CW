@@ -5,6 +5,7 @@ import pandas as pd
 from BSE import market_session
 
 def make_df(path: str):
+    #makes data frames from the avg balance csv file
     df = pd.read_csv(path)
     df.columns =  ['name', 'time', 'curr best bid', 'curr best offer', 'trader1', 'total profit1', 'no. 1', 'avg profit1', 'trader2', 'total profit2', 'no. 2', 'avg profit2', 'err']
     df_profit = df[['avg profit1', 'avg profit2']]
@@ -12,12 +13,13 @@ def make_df(path: str):
     return df, df_profit
 
 def collect_avg_profit(df):
+    #returns average total profit of each trader type given a data frame
     _zic = df['ZIC'][len(df)-1]
     _shvr = df['SHVR'][len(df)-1]
     return _zic, _shvr
 
 def plot_performance(n50mean_zic, n500mean_zic, n50mean_shvr, n500mean_shvr):
-
+    #plot average profit of zic and shvr w different independant sessions over time period
     fig = plt.figure(figsize=(20, 7.5))
     ax1 = fig.add_subplot(221)
     ax1.plot(n50mean_zic, 'b', n50mean_shvr, 'r')
@@ -28,6 +30,7 @@ def plot_performance(n50mean_zic, n500mean_zic, n50mean_shvr, n500mean_shvr):
     ax2.title.set_text('zic vs shvr 500 sessions')
 
 def compare(shvr, zic):
+    #compare and collect the number of wins for shvr and zic traders given their average profit arrays
     shvr_w = 0
     zic_w = 0
     for i in range(len(shvr)):
@@ -39,6 +42,7 @@ def compare(shvr, zic):
     return shvr_w, zic_w
 
 def trader_specs_two(R, n):
+    #defines the trader specs
     SHVR_num = (n*R)//100
     zic_num = ((100-R)*n)//100
     buyer_spec = [('SHVR', SHVR_num), ('ZIC', zic_num)]
@@ -47,6 +51,7 @@ def trader_specs_two(R, n):
     return trader_specs
 
 def run_market_sim(trial_id, no_sessions, R, n, supply_range, demand_range, start_time, end_time, path):
+    #simulate the market session and collect the average profit of each trader at the end of each independant session
     trader_specs = trader_specs_two(R, n)
     total_avg_zic = []
     total_avg_shvr = []
@@ -70,6 +75,7 @@ def run_market_sim(trial_id, no_sessions, R, n, supply_range, demand_range, star
     return total_avg_shvr, total_avg_zic
 
 def R_market_run(R, no_sessions, n, supply_range, demand_range, start_time, end_time):
+    #simulate market sessions for different ratio values R which defines the zic and shvr numbers
     res = []
     tmp = "n" + str(no_sessions) + "_"
     for r in R:
@@ -80,6 +86,7 @@ def R_market_run(R, no_sessions, n, supply_range, demand_range, start_time, end_
     return res
 
 def plot_wins(res50: list, res500: list):
+    #plot, for different ratios of zic and shvr traders, how many times they made more profit than the other in their independant sessions
     shvr_win50 = [0] * 9
     zic_win50 = [0] * 9
     zic_win500 = [0] * 9
@@ -109,6 +116,7 @@ def plot_wins(res50: list, res500: list):
     ax2.legend()
 
 def collect_pvals_norm(marketoutput: list):
+    #test normality of data collected in simulated market sessions
     res = []
     for i in range(len(marketoutput)):
         _, p_shvr = stats.shapiro(marketoutput[i][0])
@@ -118,6 +126,7 @@ def collect_pvals_norm(marketoutput: list):
     return res
 
 def A_B_test(p_val: list, data_: list, a: float = 0.05):
+    #A/B testing on two data, use either mann-whitney U test or t-test depending on normality of the data (when there are different ratios of zic and shvr)
     res = []
 
     for i in range(len(p_val)):
@@ -133,7 +142,7 @@ def A_B_test(p_val: list, data_: list, a: float = 0.05):
     return res
 
 def a_b_c_test(shvr_avg, gvwy_avg, zic_avg, zip_avg, res):
-    
+    #use either kruksal or one way ANOVA test depending on the normality of the data
     if res[0][0] < 0.05 or res[0][1] < 0.05 or res[0][2] < 0.05 or res[0][3] < 0.05:
         _, p = stats.kruskal(shvr_avg, gvwy_avg, zic_avg, zip_avg)
     else:
@@ -141,6 +150,7 @@ def a_b_c_test(shvr_avg, gvwy_avg, zic_avg, zip_avg, res):
     return p
 
 def collect_mean_4(df):
+    #returns accum average profit of each trader type 
     mean_zic = df['ZIC'][len(df)-1]
     mean_shvr = df['SHVR'][len(df)-1]
     mean_GVWY = df['GVWY'][len(df)-1]
@@ -148,6 +158,7 @@ def collect_mean_4(df):
     return mean_shvr, mean_GVWY, mean_zic, mean_zip
 
 def df_four(path):
+    #make dataframe from the simulated market sessions when there are 4 different traders
     df = pd.read_csv(path)
     df.columns =  ['name', 'time', 'curr best bid', 'curr best offer', 'trader1', 'total profit1', 'no. 1', 'avg profit1', 'trader2', 'total profit2', 'no. 2', 'avg profit2',
                    'trader3', 'total profit3', 'no. 3', 'avg profit3', 'trader4', 'total profit4', 'no. 4', 'avg profit4', 'err']
@@ -156,6 +167,7 @@ def df_four(path):
     return df, df_profit    
 
 def run_market_sim_four(trial_id, no_sessions, t, n, supply_range, demand_range, start_time, end_time):
+    #simulate a market sim for 4 traders and collect their profit as well as if the data is normal or not (p)
     res = [[] for _ in range(4)]
 
     seller_spec = [('SHVR', int(t[0]*n/100)), ('GVWY', int(t[1]*n/100)), ('ZIC', int(t[2]*n/100)), ('ZIP', int(t[3]*n/100))]
@@ -188,6 +200,7 @@ def run_market_sim_four(trial_id, no_sessions, t, n, supply_range, demand_range,
     return res, result
 
 def if_norm(res):
+    # check if all vals are normal or not using shapiro-wilk
     p_vals = []
     _, p_shvr = stats.shapiro(res[0])
     _, p_gvwy = stats.shapiro(res[1])
@@ -197,14 +210,8 @@ def if_norm(res):
 
     return p_vals
 
-def find_bigger(pvals: list):
-    res = []
-    for i, p in enumerate(pvals):
-        if p > 0.05:
-            res.append(i)
-    return res
-
 def plot_performance_same_ratio(res50):
+    # for when there are equal number of trader of each type, plot their performance
     shvr_w = 0
     gvwy_w = 0
     zic_w = 0
@@ -239,6 +246,7 @@ def plot_performance_same_ratio(res50):
     ax2.title.set_text('same ratio, number of wins')
 
 def gather_wins(res):
+    #gather and return the number of times a trader had more profit than the rest in a given session
     gvwy_wins = [0] * 4
     shvr_wins = [0] * 4
     zic_wins = [0] * 4
@@ -261,6 +269,7 @@ def gather_wins(res):
     return shvr_wins, gvwy_wins, zic_wins, zip_wins
 
 def sub_plot_add(shvrw, gvwyw, zicw, zipw, fig, index, ratio, axID, n):
+    #helper for plot_wins_4 to make the sub plots
     ax = "ax"+str(axID)
     ax = fig.add_subplot(index)
     ax.plot(shvrw, 'r', label='shvr')
@@ -273,6 +282,7 @@ def sub_plot_add(shvrw, gvwyw, zicw, zipw, fig, index, ratio, axID, n):
 
 
 def plot_wins_4(res1: list, ratio1: list, res2: list, ratio2: list, res3: list, ratio3: list):
+    #plot the number of time a given trader in a session has made more profit than the rest
     shvr_wins1, gvwy_wins1, zic_wins1, zip_wins1 = gather_wins(res1)
     shvr_wins2, gvwy_wins2, zic_wins2, zip_wins2 = gather_wins(res2)
     shvr_wins3, gvwy_wins3, zic_wins3, zip_wins3 = gather_wins(res3)
@@ -286,6 +296,7 @@ def plot_wins_4(res1: list, ratio1: list, res2: list, ratio2: list, res3: list, 
 
 
 def run_market_sim_D(trial_id, no_sessions, supply_range, demand_range, start_time, end_time, path, path_strat, buyer_spec, seller_spec):
+    # simulate a market session and collect profit per sec, hyperparams and profit of zipsh and zic traders to replicate cliff 2023 part D 1
     trader_specs = {'sellers': seller_spec, 'buyers': buyer_spec}
     total_avg_zipsh = []
     avg_pps_total = []
@@ -318,10 +329,11 @@ def run_market_sim_D(trial_id, no_sessions, supply_range, demand_range, start_ti
     return total_avg_zipsh, avg_pps_total, total_avg_prof_per_session, hyper_params
 
 def run_market_d2(zipsh_num, k, zic_num, range1, range2, start_time, mid_time, end_time, ot, id, n, path, path_strat):
+    # simulate a market session and collect all results for when zipsh is in the market, return vals are average prof per independant session and all hyperparameters
     total_avg_prof_per_session = []
     hyper_params = [[] for _ in range(5)]
-    buyers_spec = [('ZIPSH', 1, {'k': 4, 'optimizer': 'ZIPSH'}), ('ZIC', 5)]
-    sellers_spec = [('ZIC', 5)]
+    buyers_spec = [('ZIPSH', 1, {'k': k, 'optimizer': 'ZIPSH'}), ('ZIC', zic_num)]
+    sellers_spec = [('ZIC', zipsh_num)]
     traders_spec = {'sellers':sellers_spec, 'buyers':buyers_spec}
 
     for _ in range(n):
@@ -349,6 +361,7 @@ def run_market_d2(zipsh_num, k, zic_num, range1, range2, start_time, mid_time, e
     return total_avg_prof_per_session, hyper_params
 
 def make_df_D(path: str, path_strat):
+    #make dataframes from the csv files average and strats 
     df = pd.read_csv(path)
     df.columns =  ['name', 'time', 'curr best bid', 'curr best offer', 'trader1', 'total profit1', 'no. 1', 'avg profit1', 'trader2', 'total profit2', 'no. 2', 'avg profit2', 'err']
     df_profit = df[['time', 'avg profit1', 'avg profit2']]
@@ -369,6 +382,7 @@ def make_df_D(path: str, path_strat):
     return df_strat, df_profit
 
 def collect_hyperparams(df):
+    #use dataframe from created from strats to extract hyperparameters
     beta = []
     momentum = []
     c_r = []
@@ -384,6 +398,7 @@ def collect_hyperparams(df):
     return beta, momentum, c_a, c_r, mBuy
 
 def collect_avg_profit_D(df):
+    #use created datafram to collect the total profit of each trader as well as average profit per second for the zipsh trader
     average_pps_per_day = []
     prof_per_sec = []
     _zic = df['ZIC'][len(df)-1]
@@ -420,17 +435,9 @@ def collect_avg_profit_D(df):
 
     return _zic, _zipsh, _avg_pps, average_pps_per_day
 
-def prof_increase(tvg):
-    #tvg total average profit
-    total_prof_increase = []
-    for i in range(len(tvg)):
-        for _ in range(len(tvg[i])):
-            prof_increase = (tvg[i][len(tvg[i]-1)]/tvg[i][0]) * 100
-            total_prof_increase.append(prof_increase)
-    return total_prof_increase
-
 def plot_params_pps(tpi, betas, mom, c_a, c_r, mBuy, n):
     #tpi = total_avg_profit_perS[i]
+    #plot all hyper parameters and average profit
     fig = plt.figure(figsize=(20, 10))
     ax1 = fig.add_subplot(221)
     ax1.plot(tpi, 'r', label='zipsh') #res50[1], 'g', res50[2], 'b', res50[3], 'y'
@@ -472,6 +479,7 @@ def plot_params_pps(tpi, betas, mom, c_a, c_r, mBuy, n):
 
 
 def test(taps):
+    #collect averages at the end of each permutation, check for normality and then either use parametric t-test or non-parametric wilcoxen test for part D 1
     avg_total = []
     for i in range(len(taps)):
         avg_end_eachD = []
@@ -494,10 +502,11 @@ def test(taps):
         return pval
     else:
         print("normal, using t-test")
-        s, pval = stats.ttest_1samp(avg_total, 0)
+        _, pval = stats.ttest_1samp(avg_total, 0)
         return pval
 
 def test_2(avg_prof):
+    #collect averages at the end of each permutation, check for normality and then either use parametric t-test or non-parametric wilcoxen test for part D 2
     avg_per_sess = []
     for i in range(len(avg_prof)):
         sess = avg_prof[i]
