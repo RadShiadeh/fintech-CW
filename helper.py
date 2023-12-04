@@ -476,13 +476,15 @@ def test(taps):
     for i in range(len(taps)):
         avg_end_eachD = []
         for j in range(len(taps[i])-1):
+            if taps[i][j] == 0:
+                continue
             pf = (taps[i][j+1] *100) / taps[i][j]
             if pf <=0:
                 avg_end_eachD.append(0)
             else:
                 avg_end_eachD.append(pf)
+                print(np.mean(avg_end_eachD))
         avg_total.append(np.mean(avg_end_eachD))
-    print(avg_total)
 
     _, p = stats.shapiro(avg_total)
 
@@ -493,5 +495,20 @@ def test(taps):
     else:
         print("normal, using t-test")
         s, pval = stats.ttest_1samp(avg_total, 0)
-        print(s)
+        return pval
+
+def test_2(avg_prof):
+    avg_per_sess = []
+    for i in range(len(avg_prof)):
+        sess = avg_prof[i]
+        avg_per_sess.append(np.mean(sess))
+    _, p = stats.shapiro(avg_per_sess)
+
+    if p < 0.05:
+        print("not normal, using wilcoxen")
+        _, pval = stats.wilcoxon(avg_per_sess)
+        return pval
+    else:
+        print("normal, using t-test")
+        _, pval = stats.ttest_1samp(avg_per_sess, 0)
         return pval
