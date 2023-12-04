@@ -3,6 +3,7 @@ import numpy as np
 from scipy import stats
 import pandas as pd
 from BSE import market_session
+""" this code is to help run the bse simulations on the jupyter notebook to avoid the notebook being too long"""
 
 def make_df(path: str):
     #makes data frames from the avg balance csv file
@@ -412,7 +413,7 @@ def collect_avg_profit_D(df):
         if df['time'][i] == df['time'][i-1]:
             continue
 
-        if df['ZIPSH'][i] < df['ZIPSH'][i-1]:
+        if df['ZIPSH'][i] < df['ZIPSH'][i-1] and len(prof_per_sec) != 0:
             val = (sum(prof_per_sec)/len(prof_per_sec))
             if val <= 0:
                 val = 0
@@ -425,7 +426,7 @@ def collect_avg_profit_D(df):
             pf = 0
         prof_per_sec.append(pf)
 
-        if df['time'][i] >= 60*60*24*n:
+        if df['time'][i] >= 60*60*24*n and len(prof_per_sec) != 0:
             n+=1                
             val = (sum(prof_per_sec)/len(prof_per_sec))
             if val <= 0:
