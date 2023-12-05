@@ -333,8 +333,8 @@ def run_market_d2(zipsh_num, k, zic_num, range1, range2, start_time, mid_time, e
     # simulate a market session and collect all results for when zipsh is in the market, return vals are average prof per independant session and all hyperparameters
     total_avg_prof_per_session = []
     hyper_params = [[] for _ in range(5)]
-    buyers_spec = [('ZIPSH', 1, {'k': k, 'optimizer': 'ZIPSH'}), ('ZIC', zic_num)]
-    sellers_spec = [('ZIC', zipsh_num)]
+    buyers_spec = [('ZIPSH', zipsh_num, {'k': k, 'optimizer': 'ZIPSH'}), ('ZIC', zic_num)]
+    sellers_spec = [('ZIC', zic_num)]
     traders_spec = {'sellers':sellers_spec, 'buyers':buyers_spec}
 
     for _ in range(n):

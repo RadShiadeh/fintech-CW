@@ -1354,7 +1354,7 @@ class Trader_ZIP(Trader):
             margin_buy = gauss_mutate_clip(s['m_buy'], big_sdev, -1.0, 0)
             margin_sell = gauss_mutate_clip(s['m_sell'], big_sdev, 0.0, 1.0)
             beta = gauss_mutate_clip(s['beta'], big_sdev, 0.0, 1.0)
-            momntm = gauss_mutate_clip(s['momntm'], big_sdev, 0.0, 0.01) #changed momentum to be between 0 and 0.1 instead of (0, 1)
+            momntm = gauss_mutate_clip(s['momntm'], big_sdev, 0.0, 0.1)
             ca = gauss_mutate_clip(s['ca'], small_sdev, 0.0, 1.0)
             cr = gauss_mutate_clip(s['cr'], small_sdev, 0.0, 1.0)
             new_strat = {'m_buy': margin_buy, 'm_sell': margin_sell, 'beta': beta, 'momntm': momntm, 'ca': ca, 'cr': cr}
@@ -1372,7 +1372,7 @@ class Trader_ZIP(Trader):
 
         def init_beta():
             # in Cliff 1997 the initial beta values are U(0.1, 0.5)
-            return random.uniform(0.01, 0.01)
+            return random.uniform(0.1, 0.5)
 
         def init_momntm():
             # in Cliff 1997 the initial momentum values are U(0.0, 0.1)
@@ -1390,7 +1390,7 @@ class Trader_ZIP(Trader):
 
         def init_margin():
             # in Cliff 1997 the initial margin values are U(0.05, 0.35)
-            return random.uniform(0.05, 0.05)
+            return random.uniform(0.05, 0.35)
 
         def init_stratwaittime():
             # not in Cliff 1997: use whatever limits you think best.
@@ -1569,7 +1569,7 @@ class Trader_ZIP(Trader):
             self.strats[s_index]['active'] = True
             self.strats[s_index]['profit'] = 0.0
             self.strats[s_index]['pps'] = 0.0
-            self.strats[s]['evaluated'] = False
+            self.strats[s_index]['evaluated'] = False
 
         # snapshot says whether the caller of respond() should print next frame of system snapshot data
         snapshot = False
