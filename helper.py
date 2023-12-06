@@ -492,7 +492,6 @@ def test(taps):
                 avg_end_eachD.append(0)
             else:
                 avg_end_eachD.append(pf)
-                print(np.mean(avg_end_eachD))
         avg_total.append(np.mean(avg_end_eachD))
 
     _, p = stats.shapiro(avg_total)
